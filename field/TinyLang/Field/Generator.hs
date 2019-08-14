@@ -207,9 +207,10 @@ instance (Arbitrary f, Field f) => Arbitrary (UniVal f (AField f)) where
 -- | An arbitrary boolean-valued expression
 boundedAbritraryExprB :: (Field f, Arbitrary f) => Vars -> Uniques -> Int -> Gen (Expr f Bool)
 boundedAbritraryExprB vars uniques size =
-    frequency [
+    if size <= 1 then EVal <$> arbitrary
+    else frequency [
               (1, EVal <$> arbitrary),
-              (5, arbitraryEVarB (boolVars vars)),
+              (2, arbitraryEVarB (boolVars vars)),
               (2, EIf <$> boundedAbritraryExprB vars (left uniques)          (size `Prelude.div` 3)
                       <*> boundedAbritraryExprB vars (left $ right uniques)  (size `Prelude.div` 3)
                       <*> boundedAbritraryExprB vars (right $ right uniques) (size `Prelude.div` 3)),
@@ -252,8 +253,8 @@ boundedAbritraryExprF vars uniques size =
     if size <= 1 then EVal <$> arbitrary
     else frequency [
               (1, EVal <$> arbitrary),
-              (5, arbitraryEVarF (fieldVars vars)),
-              (3, EIf <$>
+              (2, arbitraryEVarF (fieldVars vars)),
+              (2, EIf <$>
                 boundedAbritraryExprB vars (left uniques)          (size `Prelude.div` 3) <*>
                 boundedAbritraryExprF vars (left $ right uniques)  (size `Prelude.div` 3) <*>
                 boundedAbritraryExprF vars (right $ right uniques) (size `Prelude.div` 3)),
@@ -271,8 +272,8 @@ boundedAbritraryExprF vars uniques size =
                       (boundedAbritraryExprB vars  (left uniques)  (size `Prelude.div` 2)) <*>
                       (boundedAbritraryExprF vars' (right uniques) (size `Prelude.div` 2))
               ),
-              (3, EAppUnOp <$> arbitrary <*>  boundedAbritraryExprF vars uniques (size-1)),
-              (3, EAppBinOp <$>
+              (2, EAppUnOp <$> arbitrary <*>  boundedAbritraryExprF vars uniques (size-1)),
+              (2, EAppBinOp <$>
                 arbitrary <*>
                 boundedAbritraryExprF vars (left uniques)  (size `Prelude.div` 2) <*>
                 boundedAbritraryExprF vars (right uniques) (size `Prelude.div` 2))
@@ -315,7 +316,7 @@ boundedAbritraryExprI vars uniques size =
                  variables which we're certain will only contain integer
                  values.
                -}
-              (3, EIf <$>
+              (2, EIf <$>
                 boundedAbritraryExprB vars (left uniques)          (size `Prelude.div` 3) <*>
                 boundedAbritraryExprI vars (left $ right uniques)  (size `Prelude.div` 3) <*>
                 boundedAbritraryExprI vars (right $ right uniques) (size `Prelude.div` 3)),
@@ -333,8 +334,8 @@ boundedAbritraryExprI vars uniques size =
                       (boundedAbritraryExprB vars  (left uniques)  (size `Prelude.div` 2)) <*>
                       (boundedAbritraryExprI vars' (right uniques) (size `Prelude.div` 2))
               ),
-              (3, EAppUnOp <$> arbitraryUnOpRing <*> boundedAbritraryExprI vars uniques (size-1)),
-              (3, EAppBinOp <$>
+              (2, EAppUnOp <$> arbitraryUnOpRing <*> boundedAbritraryExprI vars uniques (size-1)),
+              (2, EAppBinOp <$>
                 arbitraryBinOpRing <*>
                 boundedAbritraryExprI vars (left uniques)  (size `Prelude.div` 2) <*>
                 boundedAbritraryExprI vars (right uniques) (size `Prelude.div` 2))
