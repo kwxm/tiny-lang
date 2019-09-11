@@ -210,15 +210,15 @@ instance (Arbitrary f, Field f) => Arbitrary (UniVal f (AField f)) where
 -- | An arbitrary boolean-valued expression
 boundedArbitraryExprB :: (Field f, Arbitrary f) => Vars -> Int -> GenS (Expr f Bool)
 boundedArbitraryExprB vars size =
-    if size <= 1 then EVal <$> liftGen arbitrary  -- FIXME: What about boundedArbitraryExprB??
+    if size <= 1 then EVal <$> liftGen arbitrary
     else frequency [
               (1, EVal <$> liftGen arbitrary),
               (2, arbitraryEVarB (boolVars vars)),
-              (2, EIf <$> boundedArbitraryExprB vars (size `Prelude.div` 3)
+              (5, EIf <$> boundedArbitraryExprB vars (size `Prelude.div` 3)
                       <*> boundedArbitraryExprB vars (size `Prelude.div` 3)
                       <*> boundedArbitraryExprB vars (size `Prelude.div` 3)),
 
-              (2, do  -- let x::Field = ... in ...
+              (5, do  -- let x::Field = ... in ...
                  u <- lift freshUnique
                  v <- liftGen (arbitraryVarF u)
                  let vars' = extendVarsF vars v
@@ -227,7 +227,7 @@ boundedArbitraryExprB vars size =
                       (boundedArbitraryExprB vars' (size `Prelude.div` 2))
               ),
 
-              (2, do  -- let x::Bool = ... in ...
+              (5, do  -- let x::Bool = ... in ...
                  u <- lift freshUnique
                  v <- liftGen (arbitraryVarB u)
                  let vars' = extendVarsB vars v
@@ -236,17 +236,17 @@ boundedArbitraryExprB vars size =
                       (boundedArbitraryExprB vars' (size `Prelude.div` 2))
               ),
 
-              (2, EAppUnOp <$> liftGen arbitrary <*> boundedArbitraryExprB vars (size-1)),
-              (2, EAppUnOp <$> liftGen arbitrary <*> boundedArbitraryExprF vars (size-1)),
-              (2, EAppBinOp <$>
+              (5, EAppUnOp <$> liftGen arbitrary <*> boundedArbitraryExprB vars (size-1)),
+              (5, EAppUnOp <$> liftGen arbitrary <*> boundedArbitraryExprF vars (size-1)),
+              (5, EAppBinOp <$>
                 liftGen arbitrary <*>
                 boundedArbitraryExprB vars (size `Prelude.div` 2) <*>
                 boundedArbitraryExprB vars (size `Prelude.div` 2)),
-              (2, EAppBinOp <$>
+              (5, EAppBinOp <$>
                 liftGen arbitraryFFcomparison <*>
                 boundedArbitraryExprF vars (size `Prelude.div` 2) <*>
                 boundedArbitraryExprF vars (size `Prelude.div` 2)),
-              (2, EAppBinOp <$>
+              (5, EAppBinOp <$>
                 liftGen arbitraryIIcomparison <*>
                 usuallyIntValuedArbitraryExpr vars (size `Prelude.div` 2) <*>
                 usuallyIntValuedArbitraryExpr vars (size `Prelude.div` 2))
@@ -258,15 +258,15 @@ boundedArbitraryExprB vars size =
 -- | An arbitrary field-valued expression
 boundedArbitraryExprF :: (Field f, Arbitrary f) => Vars -> Int -> GenS (Expr f (AField f))
 boundedArbitraryExprF vars size =
-    if size <= 1 then EVal <$> liftGen arbitrary  -- FIXME: What about boundedArbitraryExprB??
+    if size <= 1 then EVal <$> liftGen arbitrary
     else frequency [
               (1, EVal <$> liftGen arbitrary),
               (2, arbitraryEVarF (fieldVars vars)),
-              (2, EIf <$>
+              (5, EIf <$>
                 boundedArbitraryExprB vars (size `Prelude.div` 3) <*>
                 boundedArbitraryExprF vars (size `Prelude.div` 3) <*>
                 boundedArbitraryExprF vars (size `Prelude.div` 3)),
-              (2, do  -- let x::Field = ... in ...
+              (5, do  -- let x::Field = ... in ...
                  u <- lift freshUnique
                  v <- liftGen (arbitraryVarF u)
                  let vars' = extendVarsF vars v
@@ -274,7 +274,7 @@ boundedArbitraryExprF vars size =
                       (boundedArbitraryExprF vars  (size `Prelude.div` 2)) <*>
                       (boundedArbitraryExprF vars' (size `Prelude.div` 2))
               ),
-              (2, do  -- let x::Bool = ... in ...
+              (5, do  -- let x::Bool = ... in ...
                  u <- lift freshUnique
                  v <- liftGen (arbitraryVarB u)
                  let vars' = extendVarsB vars v
@@ -282,8 +282,8 @@ boundedArbitraryExprF vars size =
                       (boundedArbitraryExprB vars  (size `Prelude.div` 2)) <*>
                       (boundedArbitraryExprF vars' (size `Prelude.div` 2))
               ),
-              (2, EAppUnOp <$> liftGen arbitrary <*>  boundedArbitraryExprF vars (size-1)),
-              (2, EAppBinOp <$>
+              (5, EAppUnOp <$> liftGen arbitrary <*>  boundedArbitraryExprF vars (size-1)),
+              (5, EAppBinOp <$>
                 liftGen arbitrary <*>
                 boundedArbitraryExprF vars (size `Prelude.div` 2) <*>
                 boundedArbitraryExprF vars (size `Prelude.div` 2))
